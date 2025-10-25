@@ -1,0 +1,218 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API de Risco de Saúde",
+    "version": "1.0.0",
+    "description": "API para cálculo de risco de saúde de pacientes."
+  },
+  "servers": [
+    { "url": "/api" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Usuario": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "nome": { "type": "string" },
+          "senha": { "type": "string" },
+          "tipo": { "type": "string", "enum": ["medico", "paciente"] }
+        }
+      },
+      "Paciente": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "nome": { "type": "string" },
+          "idade": { "type": "integer" },
+          "imc": { "type": "number" },
+          "pressao": { "type": "number" },
+          "historico": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/HistoricoRisco" }
+          }
+        }
+      },
+      "HistoricoRisco": {
+        "type": "object",
+        "properties": {
+          "data": { "type": "string", "format": "date-time" },
+          "idade": { "type": "integer" },
+          "imc": { "type": "number" },
+          "pressao": { "type": "number" },
+          "risco": { "type": "string", "enum": ["ALTO", "MODERADO", "BAIXO"] }
+        }
+      },
+      "Token": {
+        "type": "object",
+        "properties": {
+          "token": { "type": "string" },
+          "tipo": { "type": "string" }
+        }
+      },
+      "Erro": {
+        "type": "object",
+        "properties": {
+          "erro": { "type": "string" }
+        }
+      }
+    }
+  },
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/registrar": {
+      "post": {
+        "summary": "Registrar usuário (médico ou paciente)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Usuario" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Usuário criado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Usuario" } } } },
+          "400": { "description": "Dados inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "summary": "Login de usuário",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nome": { "type": "string" },
+                  "senha": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login bem-sucedido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Token" } } } },
+          "401": { "description": "Usuário ou senha inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/pacientes": {
+      "post": {
+        "summary": "Registrar paciente (apenas médico)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nome": { "type": "string" },
+                  "idade": { "type": "integer" },
+                  "imc": { "type": "number" },
+                  "pressao": { "type": "number" }
+                },
+                "required": ["nome", "idade", "imc", "pressao"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Paciente criado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Paciente" } } } },
+          "400": { "description": "Dados inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "403": { "description": "Acesso restrito a médicos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "401": { "description": "Token não fornecido ou inválido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      },
+      "get": {
+        "summary": "Buscar pacientes (apenas médico)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Lista de pacientes", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Paciente" } } } } },
+          "403": { "description": "Acesso restrito a médicos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "401": { "description": "Token não fornecido ou inválido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/pacientes/{id}": {
+      "get": {
+        "summary": "Buscar paciente por ID (apenas médico)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Paciente encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Paciente" } } } },
+          "404": { "description": "Paciente não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "403": { "description": "Acesso restrito a médicos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "401": { "description": "Token não fornecido ou inválido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      },
+      "put": {
+        "summary": "Atualizar dados do paciente (apenas médico)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "idade": { "type": "integer" },
+                  "imc": { "type": "number" },
+                  "pressao": { "type": "number" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Paciente atualizado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Paciente" } } } },
+          "404": { "description": "Paciente não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "403": { "description": "Acesso restrito a médicos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "401": { "description": "Token não fornecido ou inválido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/pacientes/{id}/risco": {
+      "post": {
+        "summary": "Calcular risco e registrar histórico (apenas médico)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Histórico de risco registrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HistoricoRisco" } } } },
+          "404": { "description": "Paciente não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "403": { "description": "Acesso restrito a médicos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "401": { "description": "Token não fornecido ou inválido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/historico": {
+      "get": {
+        "summary": "Buscar histórico do paciente (apenas paciente)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Histórico do paciente", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/HistoricoRisco" } } } } },
+          "403": { "description": "Acesso restrito a pacientes", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "401": { "description": "Token não fornecido ou inválido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    }
+  }
+}

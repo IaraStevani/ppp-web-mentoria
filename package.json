@@ -1,10 +1,21 @@
 {
   "name": "ppp-web-mentoria",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Aplicação Web para acompanhamento de risco de saúde de pacientes",
+  "main": "app.js",
   "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "express-session": "^1.17.3",
+    "cookie-parser": "^1.4.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   },
   "repository": {
     "type": "git",

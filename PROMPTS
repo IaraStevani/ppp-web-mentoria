@@ -1,0 +1,21 @@
+1. Objetivo
+- Criar uma Aplicação Web para acompanhamento da progressão do calculo de risco de um paciente desenvolver uma condição de saúde.
+
+2. Contexto
+-A aplicação Web será baseada na API para calcular o risco de um paciente desenvolver uma condição de saúde que está definida no Swagger file armazenado em resources\swagger.json
+-Para que eu possa usar as funcionalidades, preciso fazer login como medico.
+-Para que o paciente possa consultar seu histórico, ele precisa fazer login como paciente.
+-Pacientes apenas consultam histórico, médicos acessam todas as funcionalidades do sistema.
+-A aplicação precisa possuir registro de paciente, busca de pacientes, registro de idade, registro de IMC, registro de pressão arterial, calculo de riscos, busca por histórico do paciente.
+-Para login do medico, gere a tela para registrar o paciente, buscar pacientes, calcular o risco de um paciente desenvolver uma condição de saúde (ex: diabetes, risco cardiovascular), com base em dados de entrada (idade, IMC, pressão) 
+-Para o login do paciente, gere a tela para que o paciente possa consultar o historico de riscos para desenvolver uma condição de saúde
+-Progressão do paciente é feita pela comparação do histórico de cálculos de risco.
+-Risco ALTO: paciente idoso (>65 anos), gravemente obeso (IMC > 35) e hipertenso (≥160 mmHg sistólica).
+-A API estará rodando em http://localhost:3000/
+
+3. Regras
+-Apenas execute o que eu te pedir, não me pergunte nada.
+-Crie essa aplicação Web usando o framework express do Javascript
+-Utilize HTML e CSS para o frontend, use o framework Bulma para estilização.
+-Faça a aplicação web rodar na porta 4000.
+-Configure mensagens de erro para quando a API retornar falhas (fora da faixa de status code 200)

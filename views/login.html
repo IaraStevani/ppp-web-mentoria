@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Risco de Saúde</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .hero-body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .login-box {
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <section class="hero is-fullheight">
+        <div class="hero-body">
+            <div class="container">
+                <div class="columns is-centered">
+                    <div class="column is-4">
+                        <div class="box login-box">
+                            <div class="has-text-centered mb-5">
+                                <h1 class="title is-3">
+                                    <i class="fas fa-heartbeat has-text-danger"></i>
+                                    Sistema de Risco
+                                </h1>
+                                <p class="subtitle is-6">Acompanhamento de Saúde</p>
+                            </div>
+
+                            <form id="loginForm">
+                                <div class="field">
+                                    <label class="label">Usuário</label>
+                                    <div class="control has-icons-left">
+                                        <input class="input" type="text" id="nome" name="nome" placeholder="Digite seu nome de usuário" required>
+                                        <span class="icon is-small is-left">
+                                            <i class="fas fa-user"></i>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label class="label">Senha</label>
+                                    <div class="control has-icons-left">
+                                        <input class="input" type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
+                                        <span class="icon is-small is-left">
+                                            <i class="fas fa-lock"></i>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <div class="control">
+                                        <button class="button is-primary is-fullwidth" type="submit" id="loginBtn">
+                                            <span class="icon">
+                                                <i class="fas fa-sign-in-alt"></i>
+                                            </span>
+                                            <span>Entrar</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <div id="errorMessage" class="notification is-danger is-hidden">
+                                <button class="delete" onclick="hideError()"></button>
+                                <span id="errorText"></span>
+                            </div>
+
+                            <div class="has-text-centered mt-4">
+                                <div class="content">
+                                    <p class="is-size-7 has-text-grey">
+                                        <strong>Tipos de usuário:</strong><br>
+                                        <i class="fas fa-user-md has-text-primary"></i> Médico: Gerenciar pacientes e calcular riscos<br>
+                                        <i class="fas fa-user has-text-info"></i> Paciente: Consultar histórico pessoal
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const loginBtn = document.getElementById('loginBtn');
+            const nome = document.getElementById('nome').value;
+            const senha = document.getElementById('senha').value;
+            
+            // Mostrar loading
+            loginBtn.classList.add('is-loading');
+            hideError();
+            
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ nome, senha })
+                });
+                
+                if (response.ok) {
+                    // Login bem-sucedido, redirecionar automaticamente
+                    window.location.href = '/';
+                } else {
+                    const errorData = await response.json();
+                    showError(errorData.error || 'Erro no login');
+                }
+            } catch (error) {
+                showError('Erro de conexão com o servidor');
+            } finally {
+                loginBtn.classList.remove('is-loading');
+            }
+        });
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorMessage').classList.remove('is-hidden');
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').classList.add('is-hidden');
+        }
+    </script>
+</body>
+</html>

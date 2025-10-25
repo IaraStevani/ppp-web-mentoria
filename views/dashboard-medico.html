@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Médico - Sistema de Risco de Saúde</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .navbar { box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tab-content { display: none; }
+        .tab-content.is-active { display: block; }
+        .risk-card { border-left: 4px solid; }
+        .risk-alto { border-left-color: #ff3860; }
+        .risk-moderado { border-left-color: #ffdd57; }
+        .risk-baixo { border-left-color: #23d160; }
+        .patient-history { max-height: 300px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar is-primary" role="navigation">
+        <div class="navbar-brand">
+            <div class="navbar-item">
+                <h1 class="title is-4 has-text-white">
+                    <i class="fas fa-user-md"></i> Dashboard Médico
+                </h1>
+            </div>
+        </div>
+        <div class="navbar-menu">
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <span class="has-text-white" id="doctorName">Dr. Usuário</span>
+                </div>
+                <div class="navbar-item">
+                    <a href="/logout" class="button is-light">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Tabs -->
+        <div class="tabs is-boxed">
+            <ul>
+                <li class="is-active" data-tab="pacientes">
+                    <a><i class="fas fa-users"></i> <span>Pacientes</span></a>
+                </li>
+                <li data-tab="novo-paciente">
+                    <a><i class="fas fa-user-plus"></i> <span>Novo Paciente</span></a>
+                </li>
+                <li data-tab="calcular-risco">
+                    <a><i class="fas fa-calculator"></i> <span>Calcular Risco</span></a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Tab: Lista de Pacientes -->
+        <div id="pacientes" class="tab-content is-active">
+            <div class="box">
+                <h2 class="title is-4">Lista de Pacientes</h2>
+                <div class="field has-addons">
+                    <div class="control is-expanded">
+                        <input class="input" type="text" id="searchPatient" placeholder="Buscar paciente por nome...">
+                    </div>
+                    <div class="control">
+                        <button class="button is-primary" onclick="loadPatients()">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                    </div>
+                </div>
+                <div id="patientsList"></div>
+            </div>
+        </div>
+
+        <!-- Tab: Novo Paciente -->
+        <div id="novo-paciente" class="tab-content">
+            <div class="box">
+                <h2 class="title is-4">Registrar Novo Paciente</h2>
+                <form id="newPatientForm">
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Nome</label>
+                                <div class="control">
+                                    <input class="input" type="text" id="patientName" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Idade</label>
+                                <div class="control">
+                                    <input class="input" type="number" id="patientAge" min="1" max="120" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">IMC</label>
+                                <div class="control">
+                                    <input class="input" type="number" id="patientIMC" step="0.1" min="10" max="60" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Pressão Arterial (mmHg)</label>
+                                <div class="control">
+                                    <input class="input" type="number" id="patientPressure" min="50" max="300" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="control">
+                            <button class="button is-success" type="submit">
+                                <i class="fas fa-save"></i> Registrar Paciente
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tab: Calcular Risco -->
+        <div id="calcular-risco" class="tab-content">
+            <div class="box">
+                <h2 class="title is-4">Calcular Risco de Paciente</h2>
+                <div class="field">
+                    <label class="label">Selecionar Paciente</label>
+                    <div class="control">
+                        <div class="select is-fullwidth">
+                            <select id="patientSelect" onchange="loadPatientData()">
+                                <option value="">Selecione um paciente...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="patientDataForm" style="display: none;">
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Idade</label>
+                                <div class="control">
+                                    <input class="input" type="number" id="updateAge" min="1" max="120">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">IMC</label>
+                                <div class="control">
+                                    <input class="input" type="number" id="updateIMC" step="0.1" min="10" max="60">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Pressão Arterial (mmHg)</label>
+                                <div class="control">
+                                    <input class="input" type="number" id="updatePressure" min="50" max="300">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="buttons">
+                        <button class="button is-info" onclick="updatePatientData()">
+                            <i class="fas fa-edit"></i> Atualizar Dados
+                        </button>
+                        <button class="button is-warning" onclick="calculateRisk()">
+                            <i class="fas fa-calculator"></i> Calcular Risco
+                        </button>
+                    </div>
+
+                    <div id="riskResult" class="mt-4"></div>
+                    <div id="patientHistory" class="mt-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para exibir detalhes do paciente -->
+    <div class="modal" id="patientModal">
+        <div class="modal-background" onclick="closePatientModal()"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Detalhes do Paciente</p>
+                <button class="delete" onclick="closePatientModal()"></button>
+            </header>
+            <section class="modal-card-body" id="patientModalContent">
+            </section>
+        </div>
+    </div>
+
+    <!-- Notification container -->
+    <div id="notifications" class="is-fixed" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div>
+
+    <script>
+        let currentUser = null;
+        let patients = [];
+
+        // Carregar dados do usuário
+        async function loadUserData() {
+            try {
+                const response = await fetch('/api/user');
+                if (response.ok) {
+                    currentUser = await response.json();
+                    document.getElementById('doctorName').textContent = `Dr. ${currentUser.nome}`;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados do usuário:', error);
+            }
+        }
+
+        // Tabs functionality
+        document.querySelectorAll('.tabs li').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabName = this.getAttribute('data-tab');
+                switchTab(tabName);
+            });
+        });
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tabs li').forEach(li => li.classList.remove('is-active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('is-active'));
+            
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('is-active');
+            document.getElementById(tabName).classList.add('is-active');
+
+            if (tabName === 'pacientes') {
+                loadPatients();
+            } else if (tabName === 'calcular-risco') {
+                loadPatientsForSelect();
+            }
+        }
+
+        // Carregar lista de pacientes
+        async function loadPatients() {
+            try {
+                const response = await fetch('/api/pacientes');
+                if (response.ok) {
+                    patients = await response.json();
+                    displayPatients(patients);
+                } else {
+                    const error = await response.json();
+                    showNotification(error.error, 'is-danger');
+                }
+            } catch (error) {
+                showNotification('Erro ao carregar pacientes', 'is-danger');
+            }
+        }
+
+        function displayPatients(patientList) {
+            const container = document.getElementById('patientsList');
+            if (patientList.length === 0) {
+                container.innerHTML = '<p class="has-text-grey">Nenhum paciente encontrado.</p>';
+                return;
+            }
+
+            container.innerHTML = patientList.map(patient => `
+                <div class="box">
+                    <div class="columns is-vcentered">
+                        <div class="column">
+                            <h5 class="title is-5">${patient.nome}</h5>
+                            <p><strong>Idade:</strong> ${patient.idade} anos</p>
+                            <p><strong>IMC:</strong> ${patient.imc}</p>
+                            <p><strong>Pressão:</strong> ${patient.pressao} mmHg</p>
+                        </div>
+                        <div class="column is-narrow">
+                            <button class="button is-info" onclick="showPatientDetails(${patient.id})">
+                                <i class="fas fa-eye"></i> Ver Detalhes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Mostrar detalhes do paciente
+        async function showPatientDetails(patientId) {
+            try {
+                const response = await fetch(`/api/pacientes/${patientId}`);
+                if (response.ok) {
+                    const patient = await response.json();
+                    const modalContent = document.getElementById('patientModalContent');
+                    
+                    modalContent.innerHTML = `
+                        <div class="content">
+                            <h4>${patient.nome}</h4>
+                            <p><strong>ID:</strong> ${patient.id}</p>
+                            <p><strong>Idade:</strong> ${patient.idade} anos</p>
+                            <p><strong>IMC:</strong> ${patient.imc}</p>
+                            <p><strong>Pressão Arterial:</strong> ${patient.pressao} mmHg</p>
+                            
+                            <h5>Histórico de Riscos:</h5>
+                            ${patient.historico && patient.historico.length > 0 ? 
+                                `<div class="patient-history">${patient.historico.map(h => `
+                                    <div class="box risk-card risk-${h.risco.toLowerCase()}">
+                                        <p><strong>Data:</strong> ${new Date(h.data).toLocaleDateString('pt-BR')}</p>
+                                        <p><strong>Risco:</strong> ${h.risco}</p>
+                                        <p><strong>Dados:</strong> Idade: ${h.idade}, IMC: ${h.imc}, Pressão: ${h.pressao}</p>
+                                    </div>
+                                `).join('')}</div>` : 
+                                '<p>Nenhum histórico de risco registrado.</p>'
+                            }
+                        </div>
+                    `;
+                    
+                    document.getElementById('patientModal').classList.add('is-active');
+                } else {
+                    const error = await response.json();
+                    showNotification(error.error, 'is-danger');
+                }
+            } catch (error) {
+                showNotification('Erro ao carregar detalhes do paciente', 'is-danger');
+            }
+        }
+
+        function closePatientModal() {
+            document.getElementById('patientModal').classList.remove('is-active');
+        }
+
+        // Registrar novo paciente
+        document.getElementById('newPatientForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                nome: document.getElementById('patientName').value,
+                idade: parseInt(document.getElementById('patientAge').value),
+                imc: parseFloat(document.getElementById('patientIMC').value),
+                pressao: parseFloat(document.getElementById('patientPressure').value)
+            };
+
+            try {
+                const response = await fetch('/api/pacientes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    showNotification('Paciente registrado com sucesso!', 'is-success');
+                    this.reset();
+                    loadPatients(); // Recarregar lista
+                } else {
+                    const error = await response.json();
+                    showNotification(error.error, 'is-danger');
+                }
+            } catch (error) {
+                showNotification('Erro ao registrar paciente', 'is-danger');
+            }
+        });
+
+        // Carregar pacientes para o select
+        async function loadPatientsForSelect() {
+            try {
+                const response = await fetch('/api/pacientes');
+                if (response.ok) {
+                    patients = await response.json();
+                    const select = document.getElementById('patientSelect');
+                    select.innerHTML = '<option value="">Selecione um paciente...</option>';
+                    
+                    patients.forEach(patient => {
+                        select.innerHTML += `<option value="${patient.id}">${patient.nome}</option>`;
+                    });
+                }
+            } catch (error) {
+                showNotification('Erro ao carregar pacientes', 'is-danger');
+            }
+        }
+
+        // Carregar dados do paciente selecionado
+        async function loadPatientData() {
+            const patientId = document.getElementById('patientSelect').value;
+            if (!patientId) {
+                document.getElementById('patientDataForm').style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/pacientes/${patientId}`);
+                if (response.ok) {
+                    const patient = await response.json();
+                    document.getElementById('updateAge').value = patient.idade;
+                    document.getElementById('updateIMC').value = patient.imc;
+                    document.getElementById('updatePressure').value = patient.pressao;
+                    document.getElementById('patientDataForm').style.display = 'block';
+                    
+                    // Mostrar histórico
+                    displayPatientHistory(patient.historico);
+                } else {
+                    const error = await response.json();
+                    showNotification(error.error, 'is-danger');
+                }
+            } catch (error) {
+                showNotification('Erro ao carregar dados do paciente', 'is-danger');
+            }
+        }
+
+        // Atualizar dados do paciente
+        async function updatePatientData() {
+            const patientId = document.getElementById('patientSelect').value;
+            if (!patientId) return;
+
+            const formData = {
+                idade: parseInt(document.getElementById('updateAge').value),
+                imc: parseFloat(document.getElementById('updateIMC').value),
+                pressao: parseFloat(document.getElementById('updatePressure').value)
+            };
+
+            try {
+                const response = await fetch(`/api/pacientes/${patientId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    showNotification('Dados do paciente atualizados!', 'is-success');
+                } else {
+                    const error = await response.json();
+                    showNotification(error.error, 'is-danger');
+                }
+            } catch (error) {
+                showNotification('Erro ao atualizar dados', 'is-danger');
+            }
+        }
+
+        // Calcular risco
+        async function calculateRisk() {
+            const patientId = document.getElementById('patientSelect').value;
+            if (!patientId) return;
+
+            try {
+                const response = await fetch(`/api/pacientes/${patientId}/risco`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    const riskData = await response.json();
+                    displayRiskResult(riskData);
+                    showNotification('Risco calculado e registrado!', 'is-success');
+                    // Recarregar dados do paciente para atualizar histórico
+                    loadPatientData();
+                } else {
+                    const error = await response.json();
+                    showNotification(error.error, 'is-danger');
+                }
+            } catch (error) {
+                showNotification('Erro ao calcular risco', 'is-danger');
+            }
+        }
+
+        function displayRiskResult(riskData) {
+            const container = document.getElementById('riskResult');
+            const riskClass = riskData.risco.toLowerCase();
+            
+            container.innerHTML = `
+                <div class="box risk-card risk-${riskClass}">
+                    <h4 class="title is-4">Resultado do Cálculo</h4>
+                    <p><strong>Risco:</strong> <span class="tag is-large ${getRiskTagClass(riskData.risco)}">${riskData.risco}</span></p>
+                    <p><strong>Data:</strong> ${new Date(riskData.data).toLocaleDateString('pt-BR')}</p>
+                    <p><strong>Dados utilizados:</strong> Idade: ${riskData.idade}, IMC: ${riskData.imc}, Pressão: ${riskData.pressao}</p>
+                </div>
+            `;
+        }
+
+        function displayPatientHistory(historico) {
+            const container = document.getElementById('patientHistory');
+            
+            if (!historico || historico.length === 0) {
+                container.innerHTML = '<p class="has-text-grey">Nenhum histórico disponível.</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <h4 class="title is-5">Histórico de Riscos</h4>
+                <div class="patient-history">
+                    ${historico.map(h => `
+                        <div class="box risk-card risk-${h.risco.toLowerCase()}">
+                            <div class="columns">
+                                <div class="column">
+                                    <p><strong>Data:</strong> ${new Date(h.data).toLocaleDateString('pt-BR')}</p>
+                                    <p><strong>Risco:</strong> <span class="tag ${getRiskTagClass(h.risco)}">${h.risco}</span></p>
+                                </div>
+                                <div class="column">
+                                    <p><strong>Idade:</strong> ${h.idade} anos</p>
+                                    <p><strong>IMC:</strong> ${h.imc}</p>
+                                    <p><strong>Pressão:</strong> ${h.pressao} mmHg</p>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function getRiskTagClass(risco) {
+            switch(risco) {
+                case 'ALTO': return 'is-danger';
+                case 'MODERADO': return 'is-warning';
+                case 'BAIXO': return 'is-success';
+                default: return 'is-light';
+            }
+        }
+
+        // Busca de pacientes
+        document.getElementById('searchPatient').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const filteredPatients = patients.filter(patient => 
+                patient.nome.toLowerCase().includes(searchTerm)
+            );
+            displayPatients(filteredPatients);
+        });
+
+        // Função para mostrar notificações
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <button class="delete" onclick="this.parentElement.remove()"></button>
+                ${message}
+            `;
+            
+            document.getElementById('notifications').appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            loadPatients();
+        });
+    </script>
+</body>
+</html>
