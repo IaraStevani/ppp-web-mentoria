@@ -4,9 +4,9 @@
   "description": "Aplicação Web para acompanhamento de risco de saúde de pacientes",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cypress run",
+    "cy:headed": "cypress run --headed",
+    "cy:open": "cypress open"
   },
   "dependencies": {
     "axios": "^1.6.0",
@@ -15,7 +15,9 @@
     "express-session": "^1.17.3"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.1.0",
     "cypress": "^14.5.1",
+    "cypress-mochawesome-reporter": "^4.0.2",
     "nodemon": "^3.0.1"
   },
   "repository": {
