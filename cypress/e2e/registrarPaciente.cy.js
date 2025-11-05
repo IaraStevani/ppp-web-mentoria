@@ -9,14 +9,14 @@ describe('Registrar Paciente', () => {
 
   it('Registrar paciente sem informar campos obrigatórios', () => {
 
-    cy.registrarPaciente('Paciente 1', '70', '40', ' ');
+    cy.registrarPaciente('Paciente sem informar campos obrigatórios', '70', '40', ' ');
 
     cy.verificarMensagemDeErro('#patientPressure', 'Preencha este campo.');
   })
 
   it('Registrar paciente informando dados invalidos', () => {
 
-    cy.registrarPaciente('Paciente 1', '0', '40', '160');
+    cy.registrarPaciente('Paciente com dados invalidos', '0', '40', '160');
 
     cy.get('#patientAge:invalid')
       .should('have.prop', 'validationMessage', 'O valor deve ser maior ou igual a 1.')
