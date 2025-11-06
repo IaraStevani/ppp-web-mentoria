@@ -7,12 +7,7 @@ on:
 jobs:
   tests: 
     # [config do so]
-    runs-on: ubuntu-latest 
-
-    # [variaveis]
-    env: 
-      API_BASE_URL: 'http://localhost:4000' 
-      PORT: 4000 #
+    runs-on: ubuntu-latest   
 
     # locais ou passos
     steps: 
