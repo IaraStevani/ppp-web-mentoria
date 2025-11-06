@@ -11,7 +11,7 @@ jobs:
 
     # [variaveis]
     env: 
-      API_BASE_URL: 'http://localhost:3000/api' 
+      API_BASE_URL: 'http://localhost:4000' 
       PORT: 4000 #
 
     # locais ou passos
