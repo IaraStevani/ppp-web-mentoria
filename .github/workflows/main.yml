@@ -34,7 +34,4 @@ jobs:
         run: sleep 30
 
       - name: Executar os testes 
-        run: npx mocha "test/api/**/*.test.js"     
-
-      - name: Rodar os testes de API via Controller
-        run: npx mocha test/controller/*/.test.js --reporter mochawesome --reporter-options reportDir=mochawesome-report,reportFilename=index,reportJson=true
+        run: npx cypress run
