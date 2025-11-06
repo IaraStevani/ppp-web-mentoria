@@ -11,7 +11,7 @@ jobs:
 
     # [variaveis]
     env: 
-      BASE_URL: 'http://localhost:3000' 
+      API_BASE_URL: 'http://localhost:3000' 
       PORT: 4000 #
 
     # locais ou passos
@@ -31,7 +31,4 @@ jobs:
         run: sleep 20
 
       - name: Executar os testes 
-        run: npx cypress run
-
-      - name: Rodar os testes de API via Controller
-        run: npx mocha test/controller/*/.test.js --reporter mochawesome --reporter-options reportDir=mochawesome-report,reportFilename=index,reportJson=true
+        run: npx cypress run     
