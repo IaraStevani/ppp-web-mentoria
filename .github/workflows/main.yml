@@ -28,7 +28,10 @@ jobs:
         run: node app.js & 
 
       - name: Esperar que o servidor inicie
-        run: sleep 30
+        run: sleep 20
 
       - name: Executar os testes 
         run: npx cypress run
+
+      - name: Rodar os testes de API via Controller
+        run: npx mocha test/controller/*/.test.js --reporter mochawesome --reporter-options reportDir=mochawesome-report,reportFilename=index,reportJson=true
