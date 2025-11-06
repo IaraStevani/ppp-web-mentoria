@@ -23,7 +23,7 @@ jobs:
         run: node app.js & 
 
       - name: Esperar que o servidor inicie
-        run: sleep 20
+        run: npx wait-on http://localhost:4000
 
       - name: Executar os testes 
         run: npx cypress run     
