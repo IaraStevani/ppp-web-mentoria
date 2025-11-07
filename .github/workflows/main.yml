@@ -2,7 +2,7 @@ name: CI Mentoria
 
 # gatilhos
 on: 
-  workflow_dispatch: 
+  push: 
 
 jobs:
   tests: 
