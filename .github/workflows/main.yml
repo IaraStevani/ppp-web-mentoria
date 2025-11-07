@@ -7,7 +7,9 @@ on:
 jobs:
   tests: 
     # [config do so]
-    runs-on: ubuntu-latest   
+    runs-on: ubuntu-latest
+    env: 
+      ELECTRON_EXTRA_LAUNCH_ARGS: --lang=pt-BR
 
     # locais ou passos
     steps: 
